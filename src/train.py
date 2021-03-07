@@ -67,10 +67,10 @@ def get_parser() -> argparse.ArgumentParser:
     train_parser.add_argument(
         "--log-dir", type=str, default='/Colorization/tb_logs',
         help="Directory for saving tensorboard logs")
-    #train_parser.add_argument(
-    #    "--file-suffix", type=str,
-    #    default=datetime.now().strftime("%Y%m%d_%H%M%S"),
-    #    help="Suffix for ckpt file and log file (Default: current timestamp)")
+    train_parser.add_argument(
+        "--file-suffix", type=str,
+        default=datetime.now().strftime("%Y%m%d_%H%M%S"),
+        help="Suffix for ckpt file and log file (Default: current timestamp)")
 
     #testing_parser = main_parser.add_argument_group('Testing configurations')
     #testing_parser.add_argument(
@@ -88,7 +88,7 @@ def log_configs(log_dir: str, args) -> None:
     writer = SummaryWriter(log_dir + "/config")
 
     for key, value in vars(args).items():
-        writer.add_text(str(key), str(value), step=0)
+        writer.add_text(str(key), str(value), global_step=0)
 
     writer.flush()
     writer.close()  # FIXME: Cautious, unused in TF
@@ -139,14 +139,11 @@ def train(args) -> None:
     #                       SparseConfusionMatrix(num_classes=3, name='cm')] \
     #        + SparseIoU.get_iou_metrics(num_classes=3, class_names=class_names))
 
-    ## Create another checkpoint/log folder for model.name and timestamp
+    # Create another checkpoint/log folder for model.name and timestamp
     #args.ckpt_dir = os.path.join(args.ckpt_dir,
     #                             model.name+'-'+args.file_suffix)
-    #args.log_dir = os.path.join(args.log_dir, 'fit',
-    #                            model.name+'-'+args.file_suffix)
-    #if args.fold_num != 0:  # If using five-fold cross-validation
-    #    args.ckpt_dir += f'_fold_{args.fold_num}'
-    #    args.log_dir += f'_fold_{args.fold_num}'
+    args.log_dir = os.path.join(args.log_dir, 'fit',
+                                model.name+'-'+args.file_suffix)
 
     ## Check if resume from training
     #initial_epoch = 0
@@ -166,7 +163,7 @@ def train(args) -> None:
     #    args.ckpt_dir = os.path.abspath(
     #        os.path.dirname(args.ckpt_filepath))
     #    args.log_dir = args.ckpt_dir.replace(
-    #        'checkpoints', 'tf_logs/fit') + f'-retrain_{args.file_suffix}'
+    #        'checkpoints', 'tb_logs/fit') + f'-retrain_{args.file_suffix}'
 
     # Write configurations to log_dir
     log_configs(args.log_dir, args)
@@ -234,6 +231,39 @@ def train(args) -> None:
     #        initial_epoch=initial_epoch,
     #        callbacks=[cp_callback, tb_callback, nan_callback, cm_callback])
     # TODO: Switch to tf.data
+
+    train_writer = SummaryWriter(args.log_dir + "/train")
+    #val_writer = SummaryWriter(args.log_dir + "/validation")
+    batch_global_step = 0
+    for epoch_i in range(args.num_epochs):
+        epoch_loss = 0.0
+        for batch_i, (img_l, img_ab) in enumerate(train_dataset):
+            # Passing data to GPU
+            img_l  = img_l.to(pytorch_device)
+            img_ab = img_ab.to(pytorch_device)
+
+            # Forward pass through model
+            img_ab_pred = model(img_l)
+
+            # Compute loss
+            loss = loss_func(img_ab_pred, img_ab)
+            batch_global_step += 1
+            epoch_loss += loss
+            # Write batch loss
+            train_writer.add_scalar('batch_loss', loss,
+                                    global_step=batch_global_step)  # FIXME: what is walltime?
+
+            # Zero gradients, perform a backward pass, and update the weights.
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+        # Write epoch averaged loss
+        train_writer.add_scalar('epoch_loss', epoch_loss / (batch_i+1),
+                                global_step=epoch_i+1)  # FIXME: what is walltime?
+
+    # Close the SummaryWriter
+    train_writer.close()
+    #val_writer.close()
 
     print('Training finished!')
 

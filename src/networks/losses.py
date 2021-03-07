@@ -2,6 +2,7 @@
 
 from torch import Tensor
 import torch.nn as nn
+from torch.nn import functional as F
 
 def get_loss_func(loss_func: str, class_weight) -> nn.modules.loss._Loss:
     """Returns an instance of the requested loss function"""

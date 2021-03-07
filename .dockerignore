@@ -5,4 +5,4 @@ data
 docker
 notebook
 src
-tf_logs
+tb_logs

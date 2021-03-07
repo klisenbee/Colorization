@@ -1,6 +1,7 @@
 data/*
 !data/*.sh
-checkpoints/**/*.pth   # Saved checkpoints/pretrained model
+# Saved checkpoints/pretrained model
+checkpoints/**/*.pth
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

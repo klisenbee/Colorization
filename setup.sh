@@ -12,7 +12,7 @@ JUPYTERPORT="9000"
 TENSORBOARDPORT="6006"
 
 COMMANDTORUNJUPYTER="jupyter notebook --no-browser --ip=0.0.0.0 --allow-root --port=$JUPYTERPORT &"
-COMMANDTORUNTENSORBOARD="tensorboard --logdir /${REPONAME}/tf_logs/ --port ${TENSORBOARDPORT} --host 0.0.0.0 >/dev/null 2>&1 &"
+COMMANDTORUNTENSORBOARD="tensorboard --logdir /${REPONAME}/tb_logs/ --port ${TENSORBOARDPORT} --host 0.0.0.0 >/dev/null 2>&1 &"
 COMMANDTOSTARTCONTAINER="docker start -ai ${CONTNAME}"
 
 ############################################################

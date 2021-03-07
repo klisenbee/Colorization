@@ -1,0 +1,24 @@
+# Basic
+setuptools
+numpy
+ipython
+jupyter
+matplotlib
+tqdm
+pytest
+argparse
+pydot   # For tf.keras.utils.plot_model
+six     # For tf-nightly and tb-nightly
+
+# Image Processing
+Pillow
+scikit-image
+scikit-learn
+
+# ML Framework
+torch==1.8.0
+torchvision==0.9.0
+#tensorflow==2.4.0
+tensorboard
+tensorboard_plugin_profile
+

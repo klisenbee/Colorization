@@ -161,7 +161,6 @@ ENV LC_ALL en_US.UTF-8
 # SECTION 6: Additional installations #
 #######################################
 # COCOAPI
-RUN python3 -m pip install cython
 RUN git clone https://github.com/cocodataset/cocoapi.git /usr/share/cocoapi && \
     cd /usr/share/cocoapi/PythonAPI && \
     sed -i 's/python/python3/g' Makefile && \
